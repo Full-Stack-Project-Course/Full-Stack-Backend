@@ -18,9 +18,19 @@ namespace Infrastructure.Data
 
         }
 
+        public async Task Add(T entity)
+        {
+            await _storeContext.AddAsync(entity);
+        }
+
         public async Task<int> CountAsync(ISpecification<T> spec)
         {
             return await QueryBuilder(spec).CountAsync();
+        }
+
+        public void Delete(T entity)
+        {
+            _storeContext.Set<T>().Remove(entity);
         }
 
         public async Task<T?> GetOneByIDAsync(int id)
@@ -41,6 +51,13 @@ namespace Infrastructure.Data
         public async Task<IReadOnlyList<T>> ListEntityWithSpec(ISpecification<T> spec)
         {
             return await QueryBuilder(spec).ToListAsync();
+        }
+
+        public void Update(T entity)
+        {
+           var entitystate = _storeContext.Set<T>().Attach(entity);
+            entitystate.State = EntityState.Modified;
+            
         }
 
         private IQueryable<T> QueryBuilder(ISpecification<T> spec)

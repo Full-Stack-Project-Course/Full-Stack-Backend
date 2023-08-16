@@ -15,5 +15,9 @@ namespace Core.Interfaces
 
         Task<T?> GetOneEntityWithSpec(ISpecification<T> spec);
 
+        Task Add(T entity);
+        void Update(T entity);
+        void Delete(T entity);
+
     }
 }
