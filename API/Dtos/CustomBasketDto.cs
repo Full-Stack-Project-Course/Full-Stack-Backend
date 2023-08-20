@@ -8,6 +8,14 @@ namespace API.Dtos
         [Required]
         public string Id { get; set; } = string.Empty;
 
+        public decimal ShippingPrice { get; set; }
+
+        public int DeliveryMethodId { get; set; }
+        public string ClientSecret { get; set; } = string.Empty;
+
+        public string PaymentIntentId { get; set; } = string.Empty;
+
+
         [Required]
         public List<BasketItemDto> Items { get; set; }
     }

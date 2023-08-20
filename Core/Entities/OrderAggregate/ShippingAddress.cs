@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Entities.OrderAggregate
 {
-    public class Address
+    public class ShippingAddress
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

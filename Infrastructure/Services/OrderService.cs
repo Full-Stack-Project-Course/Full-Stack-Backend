@@ -2,27 +2,23 @@
 using Core.Entities.OrderAggregate;
 using Core.Interfaces;
 using Core.Specifications;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Infrastructure.Data
 {
-    public class OrderRepository : IOrderService
+    public class OrderService : IOrderService
     {
         private readonly IBasketRepository _basketRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public OrderRepository(IBasketRepository basketRepository, IUnitOfWork unitOfWork)
+        public OrderService(IBasketRepository basketRepository, IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _basketRepository = basketRepository;
 
         }
 
-        public async Task<Order?> CreateOrderAsync(string BuyerEmail,int DeliveryMethodId, string BasktetID, Address ShippingAddress)
+        public async Task<Order?> CreateOrderAsync(string BuyerEmail,int DeliveryMethodId, string BasktetID, ShippingAddress ShippingAddress , string PaymentIntentId)
         {
             //get the basket
             var basket = await _basketRepository.GetBasketAsync(BasktetID);
@@ -37,16 +33,36 @@ namespace Infrastructure.Data
             }
             var deliveryMethod = await _unitOfWork.Repository<DeliveryMethod>().GetOneByIDAsync(DeliveryMethodId);
             var totalSum = orderItems.Sum(o => o.Price * o.Quantity);
-            var order = new Order
+
+            //check if an order exists first
+            var spec = new OrderWithPaymentIntentSpec(basket.PaymentIntentId);
+            var order = await _unitOfWork.Repository<Order>().GetOneEntityWithSpec(spec);
+            
+            if(order is not null)
             {
-                Address = ShippingAddress,
-                BuyerEmail = BuyerEmail,
-                DeliveryMethod = deliveryMethod,
-                Items = orderItems,
-                SubTotal = totalSum,
-            };
+                order.Address = ShippingAddress;
+                order.DeliveryMethod = deliveryMethod;
+               
+                order.SubTotal = totalSum;
+                _unitOfWork.Repository<Order>().Update(order);
+            }
+            else
+            {
+             order = new Order
+                {
+                    Address = ShippingAddress,
+                    BuyerEmail = BuyerEmail,
+                    DeliveryMethod = deliveryMethod,
+                    PaymentIntentId = PaymentIntentId,
+                    Items = orderItems,
+                    SubTotal = totalSum,
+                };
 
            await _unitOfWork.Repository<Order>().Add(order);
+            }
+            
+            
+
            var result= await _unitOfWork.Compelete();
 
             //delete the basket

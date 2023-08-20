@@ -14,7 +14,7 @@ namespace Core.Entities
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
         public decimal SubTotal { get; set; }
         public DeliveryMethod DeliveryMethod { get; set; }
-        public Address Address { get; set; }
+        public ShippingAddress Address { get; set; }
 
         public string BuyerEmail { get; set; }
 

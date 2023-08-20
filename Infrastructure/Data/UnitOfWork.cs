@@ -12,7 +12,7 @@ namespace Infrastructure.Data
     public class UnitOfWork: IUnitOfWork
     {
         private readonly StoreContext _storeContext;
-        private Hashtable repositories = new Hashtable();
+        private Hashtable? repositories = null;
         public UnitOfWork(StoreContext storeContext)
         {
                _storeContext = storeContext;
@@ -29,15 +29,16 @@ namespace Infrastructure.Data
 
         public IGenericRepository<TEntity> Repository<TEntity>() where TEntity:BaseEntity 
         {
-            var repoType = typeof(IGenericRepository<>);
-           var instance = Activator.CreateInstance( repoType.MakeGenericType(typeof(TEntity)) , _storeContext);
-
-            if(!repositories.ContainsKey(repoType) )
+            if(repositories is null)  repositories = new Hashtable();
+            var type = typeof(TEntity).Name;
+            if(!repositories.ContainsKey(type) )
             {
-                repositories.Add(repoType, instance);
+             var repoType = typeof(GenericRepository<>);
+           var instance = Activator.CreateInstance( repoType.MakeGenericType(typeof(TEntity)) , _storeContext);
+                repositories.Add(type, instance);
             }
 
-            return (IGenericRepository<TEntity>)repositories[repoType]!;
+            return (IGenericRepository<TEntity>)repositories[type]!;
           
            
         }
